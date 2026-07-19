@@ -71,6 +71,30 @@ function Dashboard() {
             <h3 className="stat-value">{data.totalEmployees}</h3>
           </div>
         </div>
+
+        <div className="stat-card">
+          <span className="stat-icon">🚚</span>
+          <div>
+            <p className="stat-label">Suppliers</p>
+            <h3 className="stat-value">{data.totalSuppliers}</h3>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-icon">🛒</span>
+          <div>
+            <p className="stat-label">Pending Orders</p>
+            <h3 className="stat-value">{data.pendingOrders}</h3>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-icon">📥</span>
+          <div>
+            <p className="stat-label">Purchase Cost</p>
+            <h3 className="stat-value">Rs. {Number(data.totalPurchaseCost).toLocaleString()}</h3>
+          </div>
+        </div>
       </div>
 
       {/* Charts Row */}

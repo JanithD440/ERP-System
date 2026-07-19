@@ -368,32 +368,40 @@ app.post('/api/login', async (req, res) => {
 });
 
 
-// ==================== DASHBOARD API ====================
+
+//================API Dashboard===================//
 
 app.get('/api/dashboard', async (req, res) => {
   try {
-    // Total products
     const productsCount = await pool.query('SELECT COUNT(*) FROM products');
     
-    // Total stock value (price * quantity)
     const stockValue = await pool.query(
       'SELECT SUM(price * quantity_in_stock) as total FROM products'
     );
 
-    // Total sales revenue
     const salesRevenue = await pool.query(
       'SELECT SUM(total_price) as total FROM sales'
     );
 
-    // Total employees
     const employeesCount = await pool.query('SELECT COUNT(*) FROM employees');
 
-    // Low stock products
+    // NEW: Suppliers count
+    const suppliersCount = await pool.query('SELECT COUNT(*) FROM suppliers');
+
+    // NEW: Pending purchase orders count
+    const pendingOrders = await pool.query(
+      "SELECT COUNT(*) FROM purchase_orders WHERE status = 'pending'"
+    );
+
+    // NEW: Total purchase cost (all orders)
+    const purchaseCost = await pool.query(
+      'SELECT SUM(total_cost) as total FROM purchase_orders'
+    );
+
     const lowStock = await pool.query(
       'SELECT id, product_name, quantity_in_stock, low_stock_alert FROM products WHERE quantity_in_stock <= low_stock_alert'
     );
 
-    // Recent 5 sales
     const recentSales = await pool.query(`
       SELECT sales.id, sales.customer_name, sales.quantity_sold, 
              sales.total_price, sales.sale_date, products.product_name
@@ -408,6 +416,9 @@ app.get('/api/dashboard', async (req, res) => {
       totalStockValue: parseFloat(stockValue.rows[0].total) || 0,
       totalSalesRevenue: parseFloat(salesRevenue.rows[0].total) || 0,
       totalEmployees: parseInt(employeesCount.rows[0].count),
+      totalSuppliers: parseInt(suppliersCount.rows[0].count),
+      pendingOrders: parseInt(pendingOrders.rows[0].count),
+      totalPurchaseCost: parseFloat(purchaseCost.rows[0].total) || 0,
       lowStockProducts: lowStock.rows,
       recentSales: recentSales.rows
     });
