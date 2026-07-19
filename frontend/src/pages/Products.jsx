@@ -11,6 +11,7 @@ function Products() {
     low_stock_alert: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null); // null = adding, number = editing
 
   const fetchProducts = () => {
     fetch('http://localhost:5000/api/products')
@@ -33,41 +34,70 @@ function Products() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const resetForm = () => {
+    setFormData({
+      product_name: '',
+      category: '',
+      price: '',
+      quantity_in_stock: '',
+      low_stock_alert: ''
+    });
+    setEditingId(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
 
+    const payload = {
+      product_name: formData.product_name,
+      category: formData.category,
+      price: parseFloat(formData.price),
+      quantity_in_stock: parseInt(formData.quantity_in_stock),
+      low_stock_alert: parseInt(formData.low_stock_alert) || 10
+    };
+
     try {
-      const res = await fetch('http://localhost:5000/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product_name: formData.product_name,
-          category: formData.category,
-          price: parseFloat(formData.price),
-          quantity_in_stock: parseInt(formData.quantity_in_stock),
-          low_stock_alert: parseInt(formData.low_stock_alert) || 10
-        })
-      });
+      let res;
+      if (editingId) {
+        // UPDATE existing product
+        res = await fetch(`http://localhost:5000/api/products/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        // CREATE new product
+        res = await fetch('http://localhost:5000/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
 
-      if (!res.ok) throw new Error('Failed to add product');
+      if (!res.ok) throw new Error('Failed to save product');
 
-      setFormData({
-        product_name: '',
-        category: '',
-        price: '',
-        quantity_in_stock: '',
-        low_stock_alert: ''
-      });
-
+      resetForm();
       fetchProducts();
 
     } catch (err) {
       console.error(err);
-      alert('Error adding product. Check console for details.');
+      alert('Error saving product. Check console for details.');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEditClick = (product) => {
+    setFormData({
+      product_name: product.product_name,
+      category: product.category,
+      price: product.price,
+      quantity_in_stock: product.quantity_in_stock,
+      low_stock_alert: product.low_stock_alert
+    });
+    setEditingId(product.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id, name) => {
@@ -141,8 +171,17 @@ function Products() {
           onChange={handleChange}
         />
         <button type="submit" disabled={submitting}>
-          {submitting ? 'Adding...' : '+ Add Product'}
+          {submitting
+            ? 'Saving...'
+            : editingId
+            ? '✏️ Update Product'
+            : '+ Add Product'}
         </button>
+        {editingId && (
+          <button type="button" className="cancel-btn" onClick={resetForm}>
+            Cancel
+          </button>
+        )}
       </form>
 
       <div className="table-wrapper">
@@ -167,7 +206,13 @@ function Products() {
                 <td className={product.quantity_in_stock <= product.low_stock_alert ? 'low-stock' : 'in-stock'}>
                   {product.quantity_in_stock}
                 </td>
-                <td>
+                <td className="action-buttons">
+                  <button
+                    className="edit-btn"
+                    onClick={() => handleEditClick(product)}
+                  >
+                    Edit
+                  </button>
                   <button
                     className="delete-btn"
                     onClick={() => handleDelete(product.id, product.product_name)}

@@ -10,6 +10,7 @@ function Employees() {
     attendance_status: 'present'
   });
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const fetchEmployees = () => {
     fetch('http://localhost:5000/api/employees')
@@ -32,39 +33,65 @@ function Employees() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      position: '',
+      salary: '',
+      attendance_status: 'present'
+    });
+    setEditingId(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
 
+    const payload = {
+      name: formData.name,
+      position: formData.position,
+      salary: parseFloat(formData.salary),
+      attendance_status: formData.attendance_status
+    };
+
     try {
-      const res = await fetch('http://localhost:5000/api/employees', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          position: formData.position,
-          salary: parseFloat(formData.salary),
-          attendance_status: formData.attendance_status
-        })
-      });
+      let res;
+      if (editingId) {
+        res = await fetch(`http://localhost:5000/api/employees/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        res = await fetch('http://localhost:5000/api/employees', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
 
-      if (!res.ok) throw new Error('Failed to add employee');
+      if (!res.ok) throw new Error('Failed to save employee');
 
-      setFormData({
-        name: '',
-        position: '',
-        salary: '',
-        attendance_status: 'present'
-      });
-
+      resetForm();
       fetchEmployees();
 
     } catch (err) {
       console.error(err);
-      alert('Error adding employee. Check console for details.');
+      alert('Error saving employee. Check console for details.');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEditClick = (emp) => {
+    setFormData({
+      name: emp.name,
+      position: emp.position,
+      salary: emp.salary,
+      attendance_status: emp.attendance_status
+    });
+    setEditingId(emp.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id, name) => {
@@ -132,8 +159,17 @@ function Employees() {
           <option value="on-leave">On Leave</option>
         </select>
         <button type="submit" disabled={submitting}>
-          {submitting ? 'Adding...' : '+ Add Employee'}
+          {submitting
+            ? 'Saving...'
+            : editingId
+            ? '✏️ Update Employee'
+            : '+ Add Employee'}
         </button>
+        {editingId && (
+          <button type="button" className="cancel-btn" onClick={resetForm}>
+            Cancel
+          </button>
+        )}
       </form>
 
       <div className="table-wrapper">
@@ -160,7 +196,13 @@ function Employees() {
                   {emp.attendance_status}
                 </td>
                 <td>{new Date(emp.date_joined).toLocaleDateString()}</td>
-                <td>
+                <td className="action-buttons">
+                  <button
+                    className="edit-btn"
+                    onClick={() => handleEditClick(emp)}
+                  >
+                    Edit
+                  </button>
                   <button
                     className="delete-btn"
                     onClick={() => handleDelete(emp.id, emp.name)}

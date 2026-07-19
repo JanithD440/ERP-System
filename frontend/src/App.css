@@ -361,3 +361,39 @@ tbody td {
   margin-bottom: 12px;
   color: #e0e0e0;
 }
+
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #0984e3;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.edit-btn:hover {
+  opacity: 0.85;
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  border: 1px solid #3a3a52;
+  border-radius: 8px;
+  background: transparent;
+  color: #a0a0b8;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #2f2f45;
+}
