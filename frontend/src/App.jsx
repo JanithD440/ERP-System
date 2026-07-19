@@ -4,6 +4,8 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Sales from './pages/Sales';
 import Employees from './pages/Employees';
+import Suppliers from './pages/Suppliers';
+import PurchaseOrders from './pages/PurchaseOrders';
 import Login from './pages/Login';
 import './App.css';
 
@@ -60,6 +62,12 @@ function App() {
               <NavLink to="/employees" className="nav-link">
                 👥 Employees
               </NavLink>
+              <NavLink to="/suppliers" className="nav-link">
+              🚚 Suppliers
+            </NavLink>
+            <NavLink to="/purchase-orders" className="nav-link">
+              🛒 Purchase Orders
+            </NavLink>
             </nav>
 
             <div className="user-info">
@@ -77,6 +85,8 @@ function App() {
               <Route path="/" element={<Products />} />
               <Route path="/sales" element={<Sales />} />
               <Route path="/employees" element={<Employees />} />
+              <Route path="/suppliers" element={<Suppliers />} />
+              <Route path="/purchase-orders" element={<PurchaseOrders />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>

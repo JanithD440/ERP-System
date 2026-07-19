@@ -397,3 +397,19 @@ tbody td {
 .cancel-btn:hover {
   background: #2f2f45;
 }
+
+
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.chart-card {
+  background: #262638;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}

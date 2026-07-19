@@ -418,6 +418,177 @@ app.get('/api/dashboard', async (req, res) => {
   }
 });
 
+
+// ==================== ANALYTICS API ====================
+
+app.get('/api/analytics', async (req, res) => {
+  try {
+    // Products count by category
+    const categoryData = await pool.query(`
+      SELECT category, COUNT(*) as count 
+      FROM products 
+      GROUP BY category
+    `);
+
+    // Sales by date
+    const salesTrend = await pool.query(`
+      SELECT DATE(sale_date) as date, SUM(total_price) as total
+      FROM sales
+      GROUP BY DATE(sale_date)
+      ORDER BY date ASC
+    `);
+
+    // Stock value by category
+    const stockByCategory = await pool.query(`
+      SELECT category, SUM(price * quantity_in_stock) as value
+      FROM products
+      GROUP BY category
+    `);
+
+    res.json({
+      categoryData: categoryData.rows,
+      salesTrend: salesTrend.rows,
+      stockByCategory: stockByCategory.rows
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ==================== SUPPLIERS API ====================
+
+// GET all suppliers
+app.get('/api/suppliers', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM suppliers ORDER BY id ASC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST - Add new supplier
+app.post('/api/suppliers', async (req, res) => {
+  try {
+    const { supplier_name, contact_person, phone, email, address } = req.body;
+    const result = await pool.query(
+      `INSERT INTO suppliers (supplier_name, contact_person, phone, email, address)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [supplier_name, contact_person, phone, email, address]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE - Remove supplier
+app.delete('/api/suppliers/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM suppliers WHERE id = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Supplier not found' });
+    }
+    res.json({ message: 'Supplier deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==================== PURCHASE ORDERS API ====================
+
+// GET all purchase orders (with supplier + product details)
+app.get('/api/purchase-orders', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT po.id, po.quantity_ordered, po.unit_cost, po.total_cost, 
+             po.status, po.order_date, po.received_date,
+             suppliers.supplier_name,
+             products.product_name
+      FROM purchase_orders po
+      JOIN suppliers ON po.supplier_id = suppliers.id
+      JOIN products ON po.product_id = products.id
+      ORDER BY po.order_date DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST - Create new purchase order
+app.post('/api/purchase-orders', async (req, res) => {
+  try {
+    const { supplier_id, product_id, quantity_ordered, unit_cost } = req.body;
+    const total_cost = quantity_ordered * unit_cost;
+
+    const result = await pool.query(
+      `INSERT INTO purchase_orders (supplier_id, product_id, quantity_ordered, unit_cost, total_cost)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [supplier_id, product_id, quantity_ordered, unit_cost, total_cost]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT - Mark purchase order as "received" (this increases product stock)
+app.put('/api/purchase-orders/:id/receive', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+
+    await client.query('BEGIN');
+
+    // Get the purchase order
+    const poResult = await client.query('SELECT * FROM purchase_orders WHERE id = $1', [id]);
+    if (poResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Purchase order not found' });
+    }
+
+    const po = poResult.rows[0];
+
+    if (po.status === 'received') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'This order is already marked as received' });
+    }
+
+    // Update purchase order status
+    await client.query(
+      `UPDATE purchase_orders SET status = 'received', received_date = NOW() WHERE id = $1`,
+      [id]
+    );
+
+    // Increase product stock
+    await client.query(
+      `UPDATE products SET quantity_in_stock = quantity_in_stock + $1 WHERE id = $2`,
+      [po.quantity_ordered, po.product_id]
+    );
+
+    await client.query('COMMIT');
+    res.json({ message: 'Purchase order marked as received. Stock updated.' });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
