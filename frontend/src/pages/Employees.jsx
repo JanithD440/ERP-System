@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import SearchBar from './components/SearchBar';
 
 function Employees({ user }) {
+  const [searchTerm, setSearchTerm] = useState('');
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -28,6 +30,11 @@ function Employees({ user }) {
   useEffect(() => {
     fetchEmployees();
   }, []);
+
+  const filteredEmployees = employees.filter((emp) =>
+    emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.position.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -171,6 +178,11 @@ function Employees({ user }) {
           </button>
         )}
       </form>
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="🔍 Search by name or position..."
+      />
 
       <div className="table-wrapper">
         <table>
@@ -186,7 +198,7 @@ function Employees({ user }) {
             </tr>
           </thead>
           <tbody>
-            {employees.map((emp) => (
+            {filteredEmployees.map((emp) => (
               <tr key={emp.id}>
                 <td>{emp.id}</td>
                 <td>{emp.name}</td>

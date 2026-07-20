@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import SearchBar from './components/SearchBar';
 
 function Sales() {
+  const [searchTerm, setSearchTerm] = useState('');
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +25,11 @@ function Sales() {
         setLoading(false);
       });
   };
+
+  const filteredSales = sales.filter((sale) =>
+    sale.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sale.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const fetchProducts = () => {
     fetch('http://localhost:5000/api/products')
@@ -125,6 +132,12 @@ function Sales() {
         </button>
       </form>
 
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="🔍 Search by customer or product..."
+      />
+
       <div className="table-wrapper">
         <table>
           <thead>
@@ -139,7 +152,7 @@ function Sales() {
             </tr>
           </thead>
           <tbody>
-            {sales.map((sale) => (
+            {filteredSales.map((sale) => (
               <tr key={sale.id}>
                 <td>{sale.id}</td>
                 <td>{sale.product_name}</td>

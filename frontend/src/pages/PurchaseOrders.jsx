@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import SearchBar from './components/SearchBar';
 
 function PurchaseOrders() {
+  const [searchTerm, setSearchTerm] = useState('');
   const [orders, setOrders] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -25,6 +27,10 @@ function PurchaseOrders() {
         setLoading(false);
       });
   };
+  const filteredOrders = orders.filter((o) =>
+    o.supplier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    o.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const fetchSuppliers = () => {
     fetch('http://localhost:5000/api/suppliers')
@@ -165,6 +171,12 @@ function PurchaseOrders() {
         </button>
       </form>
 
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="🔍 Search by supplier or product..."
+      />
+
       <div className="table-wrapper">
         <table>
           <thead>
@@ -181,7 +193,7 @@ function PurchaseOrders() {
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <tr key={order.id}>
                 <td>{order.id}</td>
                 <td>{order.supplier_name}</td>

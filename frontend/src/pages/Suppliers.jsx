@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import SearchBar from './components/SearchBar';
 
 function Suppliers() {
+  const [searchTerm, setSearchTerm] = useState('');
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -24,6 +26,11 @@ function Suppliers() {
         setLoading(false);
       });
   };
+
+  const filteredSuppliers = suppliers.filter((s) =>
+    s.supplier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (s.contact_person && s.contact_person.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   useEffect(() => {
     fetchSuppliers();
@@ -136,6 +143,12 @@ function Suppliers() {
         </button>
       </form>
 
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="🔍 Search by supplier or contact person..."
+      />
+
       <div className="table-wrapper">
         <table>
           <thead>
@@ -149,7 +162,7 @@ function Suppliers() {
             </tr>
           </thead>
           <tbody>
-            {suppliers.map((s) => (
+            {filteredSuppliers.map((s) => (
               <tr key={s.id}>
                 <td>{s.id}</td>
                 <td>{s.supplier_name}</td>

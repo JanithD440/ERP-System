@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
+import SearchBar from './components/SearchBar';
+
+
 
 function Products({ user }) {
+  const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
+    
     product_name: '',
     category: '',
     price: '',
@@ -25,10 +30,17 @@ function Products({ user }) {
         setLoading(false);
       });
   };
+  const filteredProducts = products.filter((product) =>
+    product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,6 +56,8 @@ function Products({ user }) {
     });
     setEditingId(null);
   };
+
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,6 +143,11 @@ function Products({ user }) {
         <span style={{ fontSize: '32px' }}>📦</span>
         <h1>Products</h1>
       </div>
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="🔍 Search by product name or category..."
+      />
 
       <form className="product-form" onSubmit={handleSubmit}>
         <input
@@ -197,7 +216,7 @@ function Products({ user }) {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <tr key={product.id}>
                 <td>{product.id}</td>
                 <td>{product.product_name}</td>
