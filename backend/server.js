@@ -37,6 +37,72 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
+
+
+// ==================== CATEGORIES API ====================
+
+// GET all categories
+app.get('/api/categories', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM categories ORDER BY category_name ASC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST - Add new category
+app.post('/api/categories', async (req, res) => {
+  try {
+    const { category_name } = req.body;
+    const result = await pool.query(
+      `INSERT INTO categories (category_name) VALUES ($1) RETURNING *`,
+      [category_name]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(400).json({ error: 'Category already exists' });
+    }
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE - Remove category
+app.delete('/api/categories/:id', verifyToken, requireRole('admin', 'manager'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM categories WHERE id = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+    res.json({ message: 'Category deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET product by barcode (for POS scanning later)
+app.get('/api/products/barcode/:barcode', async (req, res) => {
+  try {
+    const { barcode } = req.params;
+    const result = await pool.query('SELECT * FROM products WHERE barcode = $1', [barcode]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found for this barcode' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
 // ==================== PRODUCTS API ====================
 
 // GET all products
@@ -68,14 +134,17 @@ app.get('/api/products/:id', async (req, res) => {
 // POST - Add new product
 app.post('/api/products', async (req, res) => {
   try {
-    const { product_name, category, price, quantity_in_stock, low_stock_alert } = req.body;
+    const { product_name, category, price, quantity_in_stock, low_stock_alert, barcode } = req.body;
     const result = await pool.query(
-      `INSERT INTO products (product_name, category, price, quantity_in_stock, low_stock_alert) 
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [product_name, category, price, quantity_in_stock, low_stock_alert || 10]
+      `INSERT INTO products (product_name, category, price, quantity_in_stock, low_stock_alert, barcode) 
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [product_name, category, price, quantity_in_stock, low_stock_alert || 10, barcode || null]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    if (err.code === '23505') {
+      return res.status(400).json({ error: 'This barcode is already used by another product' });
+    }
     console.error(err);
     res.status(500).json({ error: err.message });
   }
@@ -85,18 +154,21 @@ app.post('/api/products', async (req, res) => {
 app.put('/api/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { product_name, category, price, quantity_in_stock, low_stock_alert } = req.body;
+    const { product_name, category, price, quantity_in_stock, low_stock_alert, barcode } = req.body;
     const result = await pool.query(
       `UPDATE products 
-       SET product_name = $1, category = $2, price = $3, quantity_in_stock = $4, low_stock_alert = $5
-       WHERE id = $6 RETURNING *`,
-      [product_name, category, price, quantity_in_stock, low_stock_alert, id]
+       SET product_name = $1, category = $2, price = $3, quantity_in_stock = $4, low_stock_alert = $5, barcode = $6
+       WHERE id = $7 RETURNING *`,
+      [product_name, category, price, quantity_in_stock, low_stock_alert, barcode || null, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Product not found' });
     }
     res.json(result.rows[0]);
   } catch (err) {
+    if (err.code === '23505') {
+      return res.status(400).json({ error: 'This barcode is already used by another product' });
+    }
     console.error(err);
     res.status(500).json({ error: err.message });
   }

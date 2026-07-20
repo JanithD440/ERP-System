@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
+import Categories from './pages/Categories';
 import Products from './pages/Products';
 import Sales from './pages/Sales';
 import Employees from './pages/Employees';
@@ -56,6 +57,9 @@ function App() {
               <NavLink to="/" end className="nav-link">
                 📦 Products
               </NavLink>
+              <NavLink to="/categories" className="nav-link">
+                🏷️ Categories
+              </NavLink>
               <NavLink to="/sales" className="nav-link">
                 💰 Sales
               </NavLink>
@@ -83,6 +87,7 @@ function App() {
             <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/" element={<Products user={user} />} />
+            <Route path="/categories" element={<Categories />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/employees" element={<Employees user={user} />} />
             <Route path="/suppliers" element={<Suppliers />} />

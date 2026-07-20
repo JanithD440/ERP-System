@@ -456,3 +456,31 @@ tbody td {
   outline: none;
   border-color: #6c5ce7;
 }
+
+
+.barcode-input-group {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.barcode-input-group input {
+  flex: 1;
+}
+
+.generate-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #00cec9;
+  color: #1e1e2f;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.generate-btn:hover {
+  opacity: 0.85;
+}
