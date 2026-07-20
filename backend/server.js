@@ -103,7 +103,8 @@ app.put('/api/products/:id', async (req, res) => {
 });
 
 // DELETE - Remove product
-app.delete('/api/products/:id', async (req, res) => {
+
+app.delete('/api/products/:id', verifyToken, requireRole('admin', 'manager'), async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
@@ -192,7 +193,7 @@ app.post('/api/sales', async (req, res) => {
 });
 
 // DELETE - Remove sale record
-app.delete('/api/sales/:id', async (req, res) => {
+app.delete('/api/sales/:id', verifyToken, requireRole('admin', 'manager'), async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query('DELETE FROM sales WHERE id = $1 RETURNING *', [id]);
@@ -274,7 +275,7 @@ app.put('/api/employees/:id', async (req, res) => {
 });
 
 // DELETE - Remove employee
-app.delete('/api/employees/:id', async (req, res) => {
+app.delete('/api/employees/:id', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query('DELETE FROM employees WHERE id = $1 RETURNING *', [id]);
@@ -366,6 +367,37 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// ==================== AUTH MIDDLEWARE ====================
+
+// Verify JWT token
+function verifyToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // "Bearer TOKEN"
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided. Please login.' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token. Please login again.' });
+    }
+    req.user = decoded; // { id, email, role }
+    next();
+  });
+}
+
+// Check if user has required role
+function requireRole(...allowedRoles) {
+  return (req, res, next) => {
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'You do not have permission to perform this action.' });
+    }
+    next();
+  };
+}
 
 
 
@@ -499,7 +531,7 @@ app.post('/api/suppliers', async (req, res) => {
 });
 
 // DELETE - Remove supplier
-app.delete('/api/suppliers/:id', async (req, res) => {
+app.delete('/api/suppliers/:id', verifyToken, requireRole('admin', 'manager'), async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query('DELETE FROM suppliers WHERE id = $1 RETURNING *', [id]);

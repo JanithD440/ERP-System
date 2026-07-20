@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function Products() {
+function Products({ user }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -213,12 +213,14 @@ function Products() {
                   >
                     Edit
                   </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(product.id, product.product_name)}
-                  >
-                    Delete
-                  </button>
+                  {user.role !== 'staff' && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDelete(product.id, product.product_name)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

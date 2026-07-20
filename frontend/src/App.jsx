@@ -81,14 +81,14 @@ function App() {
           {/* Main Content */}
           <main className="main-content">
             <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/" element={<Products />} />
-              <Route path="/sales" element={<Sales />} />
-              <Route path="/employees" element={<Employees />} />
-              <Route path="/suppliers" element={<Suppliers />} />
-              <Route path="/purchase-orders" element={<PurchaseOrders />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Products user={user} />} />
+            <Route path="/sales" element={<Sales />} />
+            <Route path="/employees" element={<Employees user={user} />} />
+            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path="/purchase-orders" element={<PurchaseOrders />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
           </main>
         </div>
       )}

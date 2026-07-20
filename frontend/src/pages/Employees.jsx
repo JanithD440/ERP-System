@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function Employees() {
+function Employees({ user }) {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -196,6 +196,7 @@ function Employees() {
                   {emp.attendance_status}
                 </td>
                 <td>{new Date(emp.date_joined).toLocaleDateString()}</td>
+
                 <td className="action-buttons">
                   <button
                     className="edit-btn"
@@ -203,12 +204,14 @@ function Employees() {
                   >
                     Edit
                   </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(emp.id, emp.name)}
-                  >
-                    Delete
-                  </button>
+                  {user.role === 'admin' && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDelete(emp.id, emp.name)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
