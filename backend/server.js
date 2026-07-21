@@ -280,6 +280,92 @@ app.delete('/api/sales/:id', verifyToken, requireRole('admin', 'manager'), async
 });
 
 
+// ==================== POS CHECKOUT API ====================
+
+// POST - Process a multi-item sale (cart checkout)
+app.post('/api/pos/checkout', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { customer_name, items } = req.body;
+    // items = [{ product_id, quantity }, ...]
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ error: 'Cart is empty' });
+    }
+
+    await client.query('BEGIN');
+
+    const receiptItems = [];
+    let grandTotal = 0;
+
+    for (const item of items) {
+      const { product_id, quantity } = item;
+
+      // Get product details and lock the row
+      const productResult = await client.query(
+        'SELECT * FROM products WHERE id = $1 FOR UPDATE',
+        [product_id]
+      );
+
+      if (productResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: `Product ID ${product_id} not found` });
+      }
+
+      const product = productResult.rows[0];
+
+      if (product.quantity_in_stock < quantity) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          error: `Not enough stock for "${product.product_name}". Available: ${product.quantity_in_stock}`
+        });
+      }
+
+      const itemTotal = product.price * quantity;
+      grandTotal += parseFloat(itemTotal);
+
+      // Insert sale record
+      const saleResult = await client.query(
+        `INSERT INTO sales (product_id, customer_name, quantity_sold, total_price)
+         VALUES ($1, $2, $3, $4) RETURNING *`,
+        [product_id, customer_name || 'Walk-in Customer', quantity, itemTotal]
+      );
+
+      // Reduce stock
+      await client.query(
+        'UPDATE products SET quantity_in_stock = quantity_in_stock - $1 WHERE id = $2',
+        [quantity, product_id]
+      );
+
+      receiptItems.push({
+        product_name: product.product_name,
+        quantity: quantity,
+        unit_price: product.price,
+        total: itemTotal,
+        sale_id: saleResult.rows[0].id
+      });
+    }
+
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      message: 'Checkout successful',
+      customer_name: customer_name || 'Walk-in Customer',
+      items: receiptItems,
+      grand_total: grandTotal,
+      date: new Date()
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+
 
 // ==================== EMPLOYEES API ====================
 

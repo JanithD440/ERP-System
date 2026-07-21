@@ -7,6 +7,7 @@ import Sales from './pages/Sales';
 import Employees from './pages/Employees';
 import Suppliers from './pages/Suppliers';
 import PurchaseOrders from './pages/PurchaseOrders';
+import POS from './pages/POS';
 import Login from './pages/Login';
 import './App.css';
 
@@ -51,6 +52,9 @@ function App() {
               <h2>Mini ERP</h2>
             </div>
             <nav className="sidebar-nav">
+            <NavLink to="/pos" className="nav-link">
+                🛒 POS
+              </NavLink>         
               <NavLink to="/dashboard" className="nav-link">
                 📊 Dashboard
               </NavLink>
@@ -85,6 +89,7 @@ function App() {
           {/* Main Content */}
           <main className="main-content">
             <Routes>
+            <Route path="/pos" element={<POS />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/" element={<Products user={user} />} />
             <Route path="/categories" element={<Categories />} />
