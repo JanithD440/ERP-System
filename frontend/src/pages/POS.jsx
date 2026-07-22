@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
 
 function POS() {
   const [products, setProducts] = useState([]);
@@ -142,6 +143,88 @@ function POS() {
     }
   };
 
+  const generatePDF = () => {
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [80, 150] // thermal receipt size (80mm width)
+    });
+
+    let y = 10;
+
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Mini ERP Store', 40, y, { align: 'center' });
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    doc.text('No 123, Main Street, Colombo', 40, y, { align: 'center' });
+    y += 4;
+    doc.text('Tel: 011-2345678', 40, y, { align: 'center' });
+    y += 6;
+
+    doc.setLineDash([1, 1], 0);
+    doc.line(5, y, 75, y);
+    y += 5;
+
+    doc.setFontSize(8);
+    doc.text(`Customer: ${receipt.customer_name}`, 5, y);
+    y += 4;
+    doc.text(`Date: ${new Date(receipt.date).toLocaleString()}`, 5, y);
+    y += 4;
+    doc.text(`Receipt #: ${Date.now().toString().slice(-8)}`, 5, y);
+    y += 5;
+
+    doc.line(5, y, 75, y);
+    y += 5;
+
+    doc.setFont(undefined, 'bold');
+    doc.text('Item', 5, y);
+    doc.text('Qty', 45, y);
+    doc.text('Total', 60, y);
+    doc.setFont(undefined, 'normal');
+    y += 4;
+
+    receipt.items.forEach((item) => {
+      const name = item.product_name.length > 20 ? item.product_name.slice(0, 20) + '..' : item.product_name;
+      doc.text(name, 5, y);
+      doc.text(String(item.quantity), 47, y);
+      doc.text(Number(item.total).toLocaleString(), 60, y);
+      y += 4;
+    });
+
+    y += 2;
+    doc.line(5, y, 75, y);
+    y += 5;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text('Grand Total:', 5, y);
+    doc.text(`Rs. ${Number(receipt.grand_total).toLocaleString()}`, 75, y, { align: 'right' });
+    y += 5;
+
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
+    doc.text('Cash Received:', 5, y);
+    doc.text(`Rs. ${Number(receipt.cash_received).toLocaleString()}`, 75, y, { align: 'right' });
+    y += 4;
+
+    doc.text('Balance:', 5, y);
+    doc.text(`Rs. ${Number(receipt.balance).toLocaleString()}`, 75, y, { align: 'right' });
+    y += 6;
+
+    doc.line(5, y, 75, y);
+    y += 5;
+
+    doc.setFontSize(9);
+    doc.text('Thank you for your purchase!', 40, y, { align: 'center' });
+
+    doc.save(`Receipt-${Date.now()}.pdf`);
+  };
+
+
+
+
   const closeReceipt = () => {
     setReceipt(null);
     setCashReceived('');
@@ -275,6 +358,7 @@ function POS() {
               <span>Rs. {Number(receipt.balance).toLocaleString()}</span>
             </div>
             <div className="receipt-actions">
+              <button onClick={generatePDF}>📄 Download PDF</button>
               <button onClick={() => window.print()}>🖨️ Print</button>
               <button onClick={closeReceipt}>Close</button>
             </div>

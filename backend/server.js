@@ -448,6 +448,102 @@ app.delete('/api/employees/:id', verifyToken, requireRole('admin'), async (req, 
 });
 
 
+// ==================== PAYROLL API ====================
+
+// GET all payroll records (with employee details)
+app.get('/api/payroll', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT payroll.*, employees.name, employees.position
+      FROM payroll
+      JOIN employees ON payroll.employee_id = employees.id
+      ORDER BY payroll.payment_date DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET payroll history for a specific employee
+app.get('/api/payroll/employee/:employeeId', async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const result = await pool.query(`
+      SELECT payroll.*, employees.name, employees.position
+      FROM payroll
+      JOIN employees ON payroll.employee_id = employees.id
+      WHERE payroll.employee_id = $1
+      ORDER BY payroll.payment_date DESC
+    `, [employeeId]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST - Process salary payment
+app.post('/api/payroll', verifyToken, requireRole('admin', 'manager'), async (req, res) => {
+  try {
+    const { employee_id, month, year, days_present, days_absent, deductions, bonus } = req.body;
+
+    // Check if already paid for this month/year
+    const existing = await pool.query(
+      'SELECT * FROM payroll WHERE employee_id = $1 AND month = $2 AND year = $3',
+      [employee_id, month, year]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Salary already processed for this employee for this month' });
+    }
+
+    // Get employee's basic salary
+    const empResult = await pool.query('SELECT salary FROM employees WHERE id = $1', [employee_id]);
+    if (empResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    const basic_salary = parseFloat(empResult.rows[0].salary);
+    const totalDays = parseInt(days_present) + parseInt(days_absent);
+    const perDaySalary = totalDays > 0 ? basic_salary / totalDays : basic_salary;
+    const attendanceAdjustedSalary = perDaySalary * parseInt(days_present);
+
+    const deductionAmount = parseFloat(deductions) || 0;
+    const bonusAmount = parseFloat(bonus) || 0;
+    const net_salary = attendanceAdjustedSalary - deductionAmount + bonusAmount;
+
+    const result = await pool.query(
+      `INSERT INTO payroll (employee_id, month, year, basic_salary, days_present, days_absent, deductions, bonus, net_salary)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [employee_id, month, year, basic_salary, days_present, days_absent, deductionAmount, bonusAmount, net_salary]
+    );
+
+    res.status(201).json(result.rows[0]);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE - Remove payroll record (admin only, for corrections)
+app.delete('/api/payroll/:id', verifyToken, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM payroll WHERE id = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Payroll record not found' });
+    }
+    res.json({ message: 'Payroll record deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 // ==================== AUTHENTICATION API ====================
 
@@ -657,6 +753,131 @@ app.get('/api/analytics', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// ==================== REPORTS API ====================
+
+app.get('/api/reports', async (req, res) => {
+  try {
+    const { period } = req.query; // 'day', 'week', 'month', 'year'
+
+    let dateFilter;
+    switch (period) {
+      case 'day':
+        dateFilter = "sale_date >= CURRENT_DATE";
+        break;
+      case 'week':
+        dateFilter = "sale_date >= CURRENT_DATE - INTERVAL '7 days'";
+        break;
+      case 'month':
+        dateFilter = "sale_date >= CURRENT_DATE - INTERVAL '30 days'";
+        break;
+      case 'year':
+        dateFilter = "sale_date >= CURRENT_DATE - INTERVAL '365 days'";
+        break;
+      default:
+        dateFilter = "sale_date >= CURRENT_DATE - INTERVAL '30 days'";
+    }
+
+    let payrollDateFilter;
+    switch (period) {
+      case 'day':
+        payrollDateFilter = "payment_date >= CURRENT_DATE";
+        break;
+      case 'week':
+        payrollDateFilter = "payment_date >= CURRENT_DATE - INTERVAL '7 days'";
+        break;
+      case 'month':
+        payrollDateFilter = "payment_date >= CURRENT_DATE - INTERVAL '30 days'";
+        break;
+      case 'year':
+        payrollDateFilter = "payment_date >= CURRENT_DATE - INTERVAL '365 days'";
+        break;
+      default:
+        payrollDateFilter = "payment_date >= CURRENT_DATE - INTERVAL '30 days'";
+    }
+
+    // Total revenue & count for the period
+    const summary = await pool.query(`
+      SELECT 
+        COALESCE(SUM(total_price), 0) as total_revenue,
+        COUNT(*) as total_transactions,
+        COALESCE(SUM(quantity_sold), 0) as total_items_sold
+      FROM sales
+      WHERE ${dateFilter}
+    `);
+
+    // Sales grouped by date (for chart)
+    const salesByDate = await pool.query(`
+      SELECT DATE(sale_date) as date, SUM(total_price) as total
+      FROM sales
+      WHERE ${dateFilter}
+      GROUP BY DATE(sale_date)
+      ORDER BY date ASC
+    `);
+
+    // Best-selling products
+    const topProducts = await pool.query(`
+      SELECT products.product_name, SUM(sales.quantity_sold) as total_sold, 
+             SUM(sales.total_price) as total_revenue
+      FROM sales
+      JOIN products ON sales.product_id = products.id
+      WHERE ${dateFilter}
+      GROUP BY products.product_name
+      ORDER BY total_sold DESC
+      LIMIT 5
+    `);
+
+    // All transactions in period
+    const transactions = await pool.query(`
+      SELECT sales.id, sales.customer_name, sales.quantity_sold, 
+             sales.total_price, sales.sale_date, products.product_name
+      FROM sales
+      JOIN products ON sales.product_id = products.id
+      WHERE ${dateFilter}
+      ORDER BY sales.sale_date DESC
+    `);
+
+    // Salary expense for the period
+    const salaryExpense = await pool.query(`
+      SELECT COALESCE(SUM(net_salary), 0) as total, COUNT(*) as count
+      FROM payroll
+      WHERE ${payrollDateFilter}
+    `);
+
+    const salaryBreakdown = await pool.query(`
+      SELECT payroll.id, employees.name, payroll.month, payroll.year, 
+             payroll.net_salary, payroll.payment_date
+      FROM payroll
+      JOIN employees ON payroll.employee_id = employees.id
+      WHERE ${payrollDateFilter}
+      ORDER BY payroll.payment_date DESC
+    `);
+
+    const totalRevenue = parseFloat(summary.rows[0].total_revenue);
+    const totalSalaryExpense = parseFloat(salaryExpense.rows[0].total);
+
+    res.json({
+      period,
+      totalRevenue,
+      totalTransactions: parseInt(summary.rows[0].total_transactions),
+      totalItemsSold: parseInt(summary.rows[0].total_items_sold),
+      totalSalaryExpense,
+      netProfit: totalRevenue - totalSalaryExpense,
+      salesByDate: salesByDate.rows,
+      topProducts: topProducts.rows,
+      transactions: transactions.rows,
+      salaryBreakdown: salaryBreakdown.rows
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
 
 
 // ==================== SUPPLIERS API ====================

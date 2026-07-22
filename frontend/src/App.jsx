@@ -8,6 +8,8 @@ import Employees from './pages/Employees';
 import Suppliers from './pages/Suppliers';
 import PurchaseOrders from './pages/PurchaseOrders';
 import POS from './pages/POS';
+import Reports from './pages/Reports';
+import Payroll from './pages/Payroll';
 import Login from './pages/Login';
 import './App.css';
 
@@ -58,6 +60,9 @@ function App() {
               <NavLink to="/dashboard" className="nav-link">
                 📊 Dashboard
               </NavLink>
+              <NavLink to="/reports" className="nav-link">
+                📈 Reports
+              </NavLink>
               <NavLink to="/" end className="nav-link">
                 📦 Products
               </NavLink>
@@ -69,6 +74,9 @@ function App() {
               </NavLink>
               <NavLink to="/employees" className="nav-link">
                 👥 Employees
+              </NavLink>
+              <NavLink to="/payroll" className="nav-link">
+                💼 Payroll
               </NavLink>
               <NavLink to="/suppliers" className="nav-link">
               🚚 Suppliers
@@ -91,10 +99,12 @@ function App() {
             <Routes>
             <Route path="/pos" element={<POS />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="/" element={<Products user={user} />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/employees" element={<Employees user={user} />} />
+            <Route path="/payroll" element={<Payroll />} />
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/purchase-orders" element={<PurchaseOrders />} />
             <Route path="*" element={<Navigate to="/" />} />

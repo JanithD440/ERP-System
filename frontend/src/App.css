@@ -781,3 +781,63 @@ tbody td {
   padding-top: 8px !important;
   margin-top: 4px;
 }
+
+
+
+.report-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.report-toggle-btn {
+  padding: 10px 20px;
+  border: 1px solid #3a3a52;
+  border-radius: 8px;
+  background: #262638;
+  color: #a0a0b8;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.report-toggle-btn:hover {
+  background: #2f2f45;
+}
+
+.report-toggle-btn.active {
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+  color: #fff;
+  border-color: transparent;
+}
+
+.report-period-label {
+  color: #a0a0b8;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+
+
+.report-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.download-report-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.download-report-btn:hover {
+  opacity: 0.9;
+}
