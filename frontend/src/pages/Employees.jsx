@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import SearchBar from './components/SearchBar';
 
 function Employees({ user }) {
@@ -15,7 +16,7 @@ function Employees({ user }) {
   const [editingId, setEditingId] = useState(null);
 
   const fetchEmployees = () => {
-    fetch('http://localhost:5000/api/employees')
+    fetch(`${API_URL}/api/employees`)
       .then((res) => res.json())
       .then((data) => {
         setEmployees(data);
@@ -64,13 +65,13 @@ function Employees({ user }) {
     try {
       let res;
       if (editingId) {
-        res = await fetch(`http://localhost:5000/api/employees/${editingId}`, {
+        res = await fetch(`${API_URL}/api/employees/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       } else {
-        res = await fetch('http://localhost:5000/api/employees', {
+        res = await fetch('${API_URL}/api/employees', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -106,7 +107,7 @@ function Employees({ user }) {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/employees/${id}`, {
+      const res = await fetch(`${API_URL}/api/employees/${id}`, {
         method: 'DELETE'
       });
 

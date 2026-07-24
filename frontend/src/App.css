@@ -45,6 +45,22 @@
   margin-top: 14px;
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a52 transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #3a3a52;
+  border-radius: 10px;
 }
 
 .nav-section-label {

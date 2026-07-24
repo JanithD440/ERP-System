@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import SearchBar from './components/SearchBar';
 
 function Products({ user }) {
@@ -18,7 +19,7 @@ function Products({ user }) {
   const [editingId, setEditingId] = useState(null);
 
   const fetchProducts = () => {
-    fetch('http://localhost:5000/api/products')
+    fetch(`${API_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
@@ -31,7 +32,7 @@ function Products({ user }) {
   };
 
   const fetchCategories = () => {
-    fetch('http://localhost:5000/api/categories')
+    fetch(`${API_URL}/api/categories`)
       .then((res) => res.json())
       .then((data) => setCategories(data))
       .catch((err) => console.error('Error fetching categories:', err));
@@ -86,13 +87,13 @@ function Products({ user }) {
     try {
       let res;
       if (editingId) {
-        res = await fetch(`http://localhost:5000/api/products/${editingId}`, {
+        res = await fetch(`${API_URL}/api/products/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       } else {
-        res = await fetch('http://localhost:5000/api/products', {
+        res = await fetch('${API_URL}/api/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -135,7 +136,7 @@ function Products({ user }) {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/products/${id}`, {
         method: 'DELETE'
       });
 

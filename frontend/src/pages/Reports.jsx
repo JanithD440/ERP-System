@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import jsPDF from 'jspdf';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -12,7 +13,7 @@ function Reports() {
 
   const fetchReport = (selectedPeriod) => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/reports?period=${selectedPeriod}`)
+    fetch(`${API_URL}/api/reports?period=${selectedPeriod}`)
       .then((res) => res.json())
       .then((result) => {
         setData(result);

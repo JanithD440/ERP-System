@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import SearchBar from './components/SearchBar';
 
 function Sales() {
@@ -14,7 +15,7 @@ function Sales() {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchSales = () => {
-    fetch('http://localhost:5000/api/sales')
+    fetch(`${API_URL}/api/sales`)
       .then((res) => res.json())
       .then((data) => {
         setSales(data);
@@ -32,7 +33,7 @@ function Sales() {
   );
 
   const fetchProducts = () => {
-    fetch('http://localhost:5000/api/products')
+    fetch(`${API_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error('Error fetching products:', err));
@@ -52,7 +53,7 @@ function Sales() {
     setSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/sales', {
+      const res = await fetch('${API_URL}/api/sales', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

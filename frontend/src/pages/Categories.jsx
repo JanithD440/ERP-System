@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 function Categories() {
   const [categories, setCategories] = useState([]);
@@ -7,7 +8,7 @@ function Categories() {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchCategories = () => {
-    fetch('http://localhost:5000/api/categories')
+    fetch(`${API_URL}/api/categories`)
       .then((res) => res.json())
       .then((data) => {
         setCategories(data);
@@ -28,7 +29,7 @@ function Categories() {
     setSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/categories', {
+      const res = await fetch('${API_URL}/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category_name: categoryName })
@@ -57,7 +58,7 @@ function Categories() {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/categories/${id}`, {
+      const res = await fetch(`${API_URL}/api/categories/${id}`, {
         method: 'DELETE'
       });
 

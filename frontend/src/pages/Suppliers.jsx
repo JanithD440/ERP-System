@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import SearchBar from './components/SearchBar';
 
 function Suppliers() {
@@ -15,7 +16,7 @@ function Suppliers() {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchSuppliers = () => {
-    fetch('http://localhost:5000/api/suppliers')
+    fetch(`${API_URL}/api/suppliers`)
       .then((res) => res.json())
       .then((data) => {
         setSuppliers(data);
@@ -45,7 +46,7 @@ function Suppliers() {
     setSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/suppliers', {
+      const res = await fetch('${API_URL}/api/suppliers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -76,7 +77,7 @@ function Suppliers() {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/suppliers/${id}`, {
+      const res = await fetch(`${API_URL}/api/suppliers/${id}`, {
         method: 'DELETE'
       });
 

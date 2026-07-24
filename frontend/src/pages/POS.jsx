@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import jsPDF from 'jspdf';
 
 function POS() {
@@ -11,7 +12,7 @@ function POS() {
   const [cashReceived, setCashReceived] = useState('');
 
   const fetchProducts = () => {
-    fetch('http://localhost:5000/api/products')
+    fetch(`${API_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error(err));
@@ -105,7 +106,7 @@ function POS() {
     setProcessing(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/pos/checkout', {
+      const res = await fetch('${API_URL}/api/pos/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
@@ -19,7 +20,7 @@ function Payroll() {
   });
 
   const fetchPayroll = () => {
-    fetch('http://localhost:5000/api/payroll')
+    fetch(`${API_URL}/api/payroll`)
       .then((res) => res.json())
       .then((data) => {
         setPayrollRecords(data);
@@ -32,7 +33,7 @@ function Payroll() {
   };
 
   const fetchEmployees = () => {
-    fetch('http://localhost:5000/api/employees')
+    fetch(`${API_URL}/api/employees`)
       .then((res) => res.json())
       .then((data) => setEmployees(data))
       .catch((err) => console.error(err));
@@ -53,7 +54,7 @@ function Payroll() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/payroll', {
+      const res = await fetch('${API_URL}/api/payroll', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ function Payroll() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/payroll/${id}`, {
+      const res = await fetch(`${API_URL}/api/payroll/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

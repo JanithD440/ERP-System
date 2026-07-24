@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Legend
@@ -13,8 +14,8 @@ function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://localhost:5000/api/dashboard').then((res) => res.json()),
-      fetch('http://localhost:5000/api/analytics').then((res) => res.json())
+      fetch(`${API_URL}/api/dashboard`).then((res) => res.json()),
+      fetch(`${API_URL}/api/analytics`).then((res) => res.json())
     ])
       .then(([dashboardData, analyticsData]) => {
         setData(dashboardData);

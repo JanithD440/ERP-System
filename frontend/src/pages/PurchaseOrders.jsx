@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import SearchBar from './components/SearchBar';
 
 function PurchaseOrders() {
@@ -16,7 +17,7 @@ function PurchaseOrders() {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchOrders = () => {
-    fetch('http://localhost:5000/api/purchase-orders')
+    fetch(`${API_URL}/api/purchase-orders`)
       .then((res) => res.json())
       .then((data) => {
         setOrders(data);
@@ -33,14 +34,14 @@ function PurchaseOrders() {
   );
 
   const fetchSuppliers = () => {
-    fetch('http://localhost:5000/api/suppliers')
+    fetch(`${API_URL}/api/suppliers`)
       .then((res) => res.json())
       .then((data) => setSuppliers(data))
       .catch((err) => console.error(err));
   };
 
   const fetchProducts = () => {
-    fetch('http://localhost:5000/api/products')
+    fetch(`${API_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error(err));
@@ -61,7 +62,7 @@ function PurchaseOrders() {
     setSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/purchase-orders', {
+      const res = await fetch('${API_URL}/api/purchase-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,7 +97,7 @@ function PurchaseOrders() {
     if (!confirm) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/purchase-orders/${id}/receive`, {
+      const res = await fetch(`${API_URL}/api/purchase-orders/${id}/receive`, {
         method: 'PUT'
       });
 
