@@ -51,39 +51,46 @@ function App() {
           <aside className="sidebar">
             <div className="sidebar-logo">
               <span style={{ fontSize: '26px' }}>🏢</span>
-              <h2>Mini ERP</h2>
+              <h2>ERP System</h2>
             </div>
             <nav className="sidebar-nav">
-            <NavLink to="/pos" className="nav-link">
-                🛒 POS
-              </NavLink>         
+              <p className="nav-section-label">Overview</p>
+              <NavLink to="/pos" className="nav-link">
+                <span className="nav-icon">🛒</span> POS
+              </NavLink>
               <NavLink to="/dashboard" className="nav-link">
-                📊 Dashboard
+                <span className="nav-icon">📊</span> Dashboard
               </NavLink>
               <NavLink to="/reports" className="nav-link">
-                📈 Reports
+                <span className="nav-icon">📈</span> Reports
               </NavLink>
+
+              <p className="nav-section-label">Inventory</p>
               <NavLink to="/" end className="nav-link">
-                📦 Products
+                <span className="nav-icon">📦</span> Products
               </NavLink>
               <NavLink to="/categories" className="nav-link">
-                🏷️ Categories
+                <span className="nav-icon">🏷️</span> Categories
               </NavLink>
               <NavLink to="/sales" className="nav-link">
-                💰 Sales
+                <span className="nav-icon">💰</span> Sales
               </NavLink>
+
+              <p className="nav-section-label">Human Resources</p>
               <NavLink to="/employees" className="nav-link">
-                👥 Employees
+                <span className="nav-icon">👥</span> Employees
               </NavLink>
               <NavLink to="/payroll" className="nav-link">
-                💼 Payroll
+                <span className="nav-icon">💼</span> Payroll
               </NavLink>
+
+              <p className="nav-section-label">Supply Chain</p>
               <NavLink to="/suppliers" className="nav-link">
-              🚚 Suppliers
-            </NavLink>
-            <NavLink to="/purchase-orders" className="nav-link">
-              🛒 Purchase Orders
-            </NavLink>
+                <span className="nav-icon">🚚</span> Suppliers
+              </NavLink>
+              <NavLink to="/purchase-orders" className="nav-link">
+                <span className="nav-icon">🛒</span> Purchase Orders
+              </NavLink>
             </nav>
 
             <div className="user-info">
