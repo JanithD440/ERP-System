@@ -1012,3 +1012,211 @@ tbody td {
   opacity: 0.9;
 }
 
+
+
+/* ==================== MOBILE MENU BUTTON ==================== */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 10px;
+  background: #262638;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 150;
+}
+
+/* ==================== TABLET (≤1024px) ==================== */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pos-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .pos-product-grid {
+    max-height: 400px;
+  }
+}
+
+/* ==================== MOBILE (≤768px) ==================== */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    height: 100%;
+    z-index: 180;
+    transition: left 0.3s ease;
+    width: 260px;
+  }
+
+  .sidebar.sidebar-open {
+    left: 0;
+  }
+
+  .sidebar-logo {
+    margin-top: 40px;
+  }
+
+  .main-content {
+    padding: 70px 16px 20px 16px;
+    max-width: 100%;
+  }
+
+  .app-header h1 {
+    font-size: 20px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card {
+    padding: 14px;
+  }
+
+  /* Forms stack vertically */
+  .product-form {
+    flex-direction: column;
+  }
+
+  .product-form input,
+  .product-form select,
+  .barcode-input-group {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .product-form button {
+    width: 100%;
+  }
+
+  /* Tables scroll horizontally */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 600px;
+  }
+
+  /* POS specific */
+  .pos-layout {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .pos-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-height: 320px;
+  }
+
+  .pos-cart {
+    padding: 16px;
+  }
+
+  /* Login page */
+  .login-box {
+    max-width: 90%;
+    padding: 32px 24px;
+  }
+
+  /* Report toggle buttons wrap */
+  .report-toggle {
+    flex-wrap: wrap;
+  }
+
+  .report-toggle-btn {
+    flex: 1;
+    min-width: 70px;
+    text-align: center;
+    padding: 10px 8px;
+  }
+
+  .report-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .download-report-btn {
+    width: 100%;
+  }
+
+  /* Search bar */
+  .search-bar input {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
+
+/* ==================== SMALL MOBILE (≤480px) ==================== */
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-value {
+    font-size: 16px;
+  }
+
+  .pos-product-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .pos-product-card {
+    padding: 10px;
+  }
+
+  .pos-product-name {
+    font-size: 12px;
+  }
+
+  .receipt-box {
+    width: 90%;
+  }
+}

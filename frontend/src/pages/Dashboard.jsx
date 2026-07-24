@@ -137,7 +137,10 @@ function Dashboard() {
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
-                data={analytics.stockByCategory}
+                data={analytics.stockByCategory.map((item) => ({
+                  ...item,
+                  value: Number(item.value)
+                }))}
                 dataKey="value"
                 nameKey="category"
                 cx="50%"
