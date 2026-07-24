@@ -53,7 +53,7 @@ function Categories() {
   };
 
   const handleDelete = async (id, name) => {
-    const confirmDelete = window.confirm(`"${name}" category eka delete karanna sure da? Meke products thiyenawa nam, ewage category eka clear wenawa.`);
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${name}"?`);
     if (!confirmDelete) return;
 
     try {

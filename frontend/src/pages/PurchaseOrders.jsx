@@ -92,7 +92,7 @@ function PurchaseOrders() {
   };
 
   const handleReceive = async (id) => {
-    const confirm = window.confirm('Order eka received widihata mark karanna sure da? Meken product stock eka update wenawa.');
+    const confirm = window.confirm('Mark this order as received? This will update the product stock.');
     if (!confirm) return;
 
     try {

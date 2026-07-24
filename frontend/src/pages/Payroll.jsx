@@ -98,7 +98,7 @@ function Payroll() {
   };
 
   const handleDelete = async (id, name) => {
-    const confirmDelete = window.confirm(`${name} ge payroll record eka delete karanna sure da?`);
+    const confirmDelete = window.confirm(`Are you sure you want to delete this payroll record for ${name}?`);
     if (!confirmDelete) return;
 
     try {

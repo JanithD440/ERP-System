@@ -131,7 +131,7 @@ function Products({ user }) {
   };
 
   const handleDelete = async (id, name) => {
-    const confirmDelete = window.confirm(`"${name}" delete karanna sure da?`);
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${name}"?`);
     if (!confirmDelete) return;
 
     try {
